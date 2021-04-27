@@ -51,6 +51,8 @@ func (al Alog) formatMessage(msg string) string {
 }
 
 func (al Alog) write(msg string, wg *sync.WaitGroup) {
+	formatted := al.formatMessage(msg)
+	al.dest.Write([]byte(formatted))
 }
 
 func (al Alog) shutdown() {
