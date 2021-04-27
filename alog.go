@@ -46,13 +46,15 @@ func (al Alog) Start() {
 	for {
 		// fmt.Println(msg)
 		// go al.write(msg, nil)
-		select {
-			case msg := <-al.msgCh:
-				go al.write(msg, nil)
-			case <-al.shutdownCh:
-				al.shutdown()
-				
-		}
+		func (al Alog, msgCh chan string, shutdownCh chan struct{}) {
+			select {
+				case msg := <-al.msgCh:
+					go al.write(msg, nil)
+				case <-al.shutdownCh:
+					al.shutdown()
+					
+			}
+		}(al, al.msgCh, al.shutdownCh)
 	}
 }
 
