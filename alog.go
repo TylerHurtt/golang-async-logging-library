@@ -46,6 +46,10 @@ func (al Alog) Start() {
 	for msg := range al.msgCh {
 		// fmt.Println(msg)
 		go al.write(msg, nil)
+		shutdown := <- al.shutdownCh
+		if shutdown == struct{}{} {
+			al.shutdown()
+		}
 	}
 }
 
