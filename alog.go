@@ -32,6 +32,7 @@ func New(w io.Writer) *Alog {
 		dest: w,
 		msgCh: make(chan string),
 		errorCh: make(chan error),
+		m: &sync.Mutex{},
 	}
 }
 
@@ -53,12 +54,14 @@ func (al Alog) formatMessage(msg string) string {
 	return fmt.Sprintf("[%v] - %v", time.Now().Format("2006-01-02 15:04:05"), msg)
 }
 
-func (al Alog) write(msg string, wg *sync.WaitGroup) {
+func (al Alog) write(msg string, wg *sync.WaitGroup, m *sync.Mutex) {
 	formatted := al.formatMessage(msg)
+	m.Lock()
 	_, err := al.dest.Write([]byte(formatted))
 	if err != nil {
 		al.errorCh <- err
 	}
+	m.Unlock()
 }
 
 func (al Alog) shutdown() {
@@ -83,5 +86,6 @@ func (al Alog) Stop() {
 
 // Write synchronously sends the message to the log output
 func (al Alog) Write(msg string) (int, error) {
+
 	return al.dest.Write([]byte(al.formatMessage(msg)))
 }
